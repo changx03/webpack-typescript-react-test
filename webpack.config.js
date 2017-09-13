@@ -3,6 +3,7 @@ var webpack = require("webpack");
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 var HtmlWebpackPlugin = require("html-webpack-plugin");
 var CleanWebpackPlugin = require("clean-webpack-plugin");
+var BrowserSyncPlugin = require("browser-sync-webpack-plugin");
 
 var extractPlugin = new ExtractTextPlugin({
   filename: "app.css"
@@ -21,8 +22,13 @@ module.exports = {
   module: {
     loaders: [
       {
-        test: /\.js$/,
-        use: [{ loader: "babel-loader", options: { presets: ["es2015"] } }]
+        test: /\.tsx?$/,
+        loaders: ["awesome-typescript-loader"]
+      },
+      {
+        test: /\.(js|jsx)$/,
+        use: ["babel-loader"],
+        exclude: /node_modules/
       },
       {
         test: /\.(scss|css)$/,
@@ -53,18 +59,24 @@ module.exports = {
     ? [
         extractPlugin,
         new HtmlWebpackPlugin({
-          template: "src/index.html"
+          template: "src/index.html",
+          cache: true
         }),
-        new CleanWebpackPlugin(["dist"]),
         new webpack.optimize.UglifyJsPlugin({
           compress: false,
           mangle: false,
           beautify: true,
-          comments: true
+          comments: true,
+          sourceMap: true
         }),
         new webpack.ProvidePlugin({
-          $: "jQuery",
-          jQuery: "jQuery"
+          $: "jQuery"
+        }),
+        new BrowserSyncPlugin({
+          host: "localhost",
+          port: 3000,
+          server: { baseDir: ["dist"] },
+          files: ["dist/*.html"]
         })
       ]
     : [
@@ -81,8 +93,7 @@ module.exports = {
           sourceMap: false
         }),
         new webpack.ProvidePlugin({
-          $: "jQuery",
-          jQuery: "jQuery"
+          $: "jQuery"
         })
       ]
 };
